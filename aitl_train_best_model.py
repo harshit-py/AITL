@@ -23,7 +23,7 @@ from itertools import cycle
 from torch.autograd import Function
 import os
 from plot_loss_acc import plot_learning_curve
-from aitl import FX, MTL, GradReverse, Discriminator
+from aitl import FX, MTL, GradReverse, Discriminator, EarlyStopper
 
 
 #######################################################
@@ -38,7 +38,7 @@ SAVE_RESULTS_TO = "./results/" + DRUG + "/" + MODE + "/"
 SAVE_TRACE_TO = "./results/" + DRUG + "/" + MODE + "/trace/"
 TARGET_DIR = 'target_3_folds'
 SOURCE_DIR = 'source_3_folds'
-LOAD_DATA_FROM = '../../cancer-genomics-data-preprocessing/data/split/' + DRUG + '/stratified/'
+LOAD_DATA_FROM = './data/split/' + DRUG + '/stratified/'
 torch.manual_seed(42)
 
 
@@ -538,6 +538,13 @@ for index, mbsize in enumerate(ls_mb_size):
                         'DR_state_dict': DR.state_dict(),
                         'optimizer_2_state_dict': optimizer_2.state_dict(),
                         }, save_best_model_to)
+            # add early stopping
+            early_stopper = EarlyStopper(patience=2, delta=0.05)
+            test_loss, test_auc, test_apr = evaluate_model(TXTestPatients_N, TYTestPatients, Gen, Map)
+            print(f"test_loss {test_loss}")
+            if early_stopper(test_loss):
+                print("early stopping ...")            
+                break
 
                 
         ## Evaluate model ## 
