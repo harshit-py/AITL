@@ -80,3 +80,21 @@ class Discriminator(nn.Module):
         return torch.sigmoid(yhat)
 
 
+## Early stopper class
+
+class EarlyStopper:
+    def __init__(self, patience=1, delta=0):
+        self.patience = patience
+        self.delta = delta
+        self.counter = 0
+        self.min_valloss = np.inf
+
+    def __call__(self, valloss):
+        if valloss < self.min_valloss:
+            self.min_valloss = valloss
+            self.counter = 0
+        elif valloss > (self.min_valloss + self.delta):
+            self.counter += 1
+            if self.counter >= self.patience:
+                return True
+        return False
