@@ -16,7 +16,7 @@ from torch.autograd import Function
 #######################################################
 
 class FX(nn.Module):
-    def __init__(self, dropout_rate, input_dim, h_dim, act='relu'):
+    def __init__(self, dropout_rate, input_dim, h_dim, zdim, act='relu'):
         super(FX, self).__init__()
         if act == 'relu':
             act = nn.ReLU()
