@@ -312,8 +312,8 @@ for index, mbsize in enumerate(ls_mb_size):
 
         AUCvals = []
 
-        Gen = FX(dropout_gen, IE_dim, h_dim, z_dim)
-        Map = MTL(dropout_mtl, h_dim, z_dim)
+        Gen = FX(dropout_gen, IE_dim, h_dim, z_dim) # FX(dropout_gen, IE_dim, h_dim, z_dim, act='leakyrelu')
+        Map = MTL(dropout_mtl, h_dim, z_dim) # MTL(dropout_mtl, h_dim, z_dim, act='leakyrelu')
         DG = Discriminator(dropout_dg, h_dim, z_dim)
         DS = Discriminator(dropout_ds, h_dim, z_dim)
         DR = Discriminator(dropout_dr, h_dim, z_dim)
