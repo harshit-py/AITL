@@ -16,43 +16,62 @@ from torch.autograd import Function
 #######################################################
 
 class FX(nn.Module):
-    def __init__(self, dropout_rate, input_dim, h_dim, z_dim):
+    def __init__(self, dropout_rate, input_dim, h_dim, act='relu'):
         super(FX, self).__init__()
+        if act == 'relu':
+            act = nn.ReLU()
+        else:
+            act = nn.LeakyReLU()
         self.EnE = torch.nn.Sequential(
             nn.Linear(input_dim, h_dim),
             nn.BatchNorm1d(h_dim),
-            nn.ReLU(),
+            act,
             nn.Dropout(p=dropout_rate))
     def forward(self, x):
         output = self.EnE(x)
         return output
 
 class MTL(nn.Module):
-    def __init__(self, dropout_rate, h_dim, z_dim):
+    def __init__(self, dropout_rate, h_dim, z_dim, act='relu'):
         super(MTL, self).__init__()
+        self.act = act
+        if act == 'relu':
+            self.actf = nn.ReLU()
+        else:
+            self.actf = nn.LeakyReLU()
         self.Sh = nn.Linear(h_dim, z_dim)
         self.bn1 = nn.BatchNorm1d(z_dim)
         self.Drop = nn.Dropout(p=dropout_rate)
         self.Source = torch.nn.Sequential(
             nn.Linear(z_dim, z_dim),
             nn.Dropout(p=dropout_rate),
-            nn.ReLU(),
+            self.actf,
             nn.Linear(z_dim, 1))
         self.Target = torch.nn.Sequential(
             nn.Linear(z_dim, 1),
             nn.Sigmoid())        
     def forward(self, S, T):
         if S is None:
-            ZT = F.relu(self.Drop(self.bn1(self.Sh((T)))))
+            if self.act == 'relu':
+                ZT = F.relu(self.Drop(self.bn1(self.Sh((T)))))
+            else:
+                ZT = F.leaky_relu(self.Drop(self.bn1(self.Sh((T)))))
             yhat_S = None
             yhat_T = self.Target(ZT)
         elif T is None:
-            ZS = F.relu(self.Drop(self.bn1(self.Sh((S)))))
+            if self.act == 'relu':
+                ZS = F.relu(self.Drop(self.bn1(self.Sh((S)))))
+            else:
+                ZS = F.leaky_relu(self.Drop(self.bn1(self.Sh((S)))))
             yhat_S = self.Source(ZS)
             yhat_T = None
-        else: 
-            ZS = F.relu(self.Drop(self.bn1(self.Sh((S)))))
-            ZT = F.relu(self.Drop(self.bn1(self.Sh((T)))))
+        else:
+            if self.act == 'relu'
+                ZS = F.relu(self.Drop(self.bn1(self.Sh((S)))))
+                ZT = F.relu(self.Drop(self.bn1(self.Sh((T)))))
+            else:
+                ZS = F.leaky_relu(self.Drop(self.bn1(self.Sh((S)))))
+                ZT = F.leaky_relu(self.Drop(self.bn1(self.Sh((T)))))
             yhat_S = self.Source(ZS)
             yhat_T = self.Target(ZT)
         return yhat_S, yhat_T   
