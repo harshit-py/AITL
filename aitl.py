@@ -23,10 +23,10 @@ class FX(nn.Module):
         else:
             act = nn.LeakyReLU()
         self.EnE = torch.nn.Sequential(
-            nn.Linear(input_dim, h_dim),
-            nn.BatchNorm1d(h_dim),
+            nn.Linear(input_dim, h_dim), # (11609, 1024)
+            nn.BatchNorm1d(h_dim), # (1024)
             act,
-            nn.Dropout(p=dropout_rate))
+            nn.Dropout(p=dropout_rate)) # 0.4
     def forward(self, x):
         output = self.EnE(x)
         return output
@@ -39,16 +39,16 @@ class MTL(nn.Module):
             self.actf = nn.ReLU()
         else:
             self.actf = nn.LeakyReLU()
-        self.Sh = nn.Linear(h_dim, z_dim)
-        self.bn1 = nn.BatchNorm1d(z_dim)
-        self.Drop = nn.Dropout(p=dropout_rate)
+        self.Sh = nn.Linear(h_dim, z_dim) # (1024, 1024)
+        self.bn1 = nn.BatchNorm1d(z_dim) # (1024)
+        self.Drop = nn.Dropout(p=dropout_rate) # 0.4
         self.Source = torch.nn.Sequential(
-            nn.Linear(z_dim, z_dim),
-            nn.Dropout(p=dropout_rate),
+            nn.Linear(z_dim, z_dim), # (1024, 1024)
+            nn.Dropout(p=dropout_rate), # 0.4
             self.actf,
-            nn.Linear(z_dim, 1))
+            nn.Linear(z_dim, 1)) # (1024, 1)
         self.Target = torch.nn.Sequential(
-            nn.Linear(z_dim, 1),
+            nn.Linear(z_dim, 1), # (1024, 1)
             nn.Sigmoid())        
     def forward(self, S, T):
         if S is None:
@@ -89,9 +89,9 @@ def grad_reverse(x):
 class Discriminator(nn.Module):
     def __init__(self, dropout_rate, h_dim, z_dim):
         super(Discriminator, self).__init__()
-        self.D1 = nn.Linear(h_dim, 1)
-        self.Drop1 = nn.Dropout(p=dropout_rate)
-        self.Drop2 = nn.Dropout(p=dropout_rate)
+        self.D1 = nn.Linear(h_dim, 1) # (1024, 1)
+        self.Drop1 = nn.Dropout(p=dropout_rate) # 0.4
+        self.Drop2 = nn.Dropout(p=dropout_rate) # 0.4
 
     def forward(self, x):
         x = grad_reverse(x)
